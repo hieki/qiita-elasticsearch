@@ -361,8 +361,8 @@ RSpec.describe Qiita::Elasticsearch::QueryBuilder do
             }
           end
 
-          it "returns match query for the corresponding field aliases" do
-            expect(query.query.to_hash).to eq(build_combined_match_query(fields: ["title", "title.ngram"], query: "foo"))
+          it "returns match query for _all fields" do
+            expect(query.query.to_hash).to eq(build_combined_match_query(fields: ["_all"], query: "title:foo"))
           end
         end
       end

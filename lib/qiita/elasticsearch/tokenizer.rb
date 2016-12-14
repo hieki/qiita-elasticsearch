@@ -50,7 +50,7 @@ module Qiita
         @default_fields = default_fields || DEFAULT_DEFAULT_FIELDS
         @matchable_options = matchable_options || DEFAULT_MATCHABLE_OPTIONS
         @field_mapping = field_mapping || DEFAULT_FIELD_MAPPING
-        @all_fields = aggregate_all_fields(all_fields)
+        @all_fields = all_fields || aggregate_all_fields
         @time_zone = time_zone
       end
 
@@ -82,9 +82,8 @@ module Qiita
 
       private
 
-      def aggregate_all_fields(base)
+      def aggregate_all_fields
         fields = [
-          base,
           @date_fields,
           @default_fields,
           @downcased_fields,
