@@ -31,15 +31,7 @@ module Qiita
       # @param [String] query_string Raw query string
       # @return [Qiita::Elasticsearch::Query]
       def build(query_string)
-        Query.new(
-          tokenizer.tokenize(query_string),
-          default_fields: @default_fields,
-          downcased_fields: @downcased_fields,
-          filterable_fields: @filterable_fields,
-          hierarchal_fields: @hierarchal_fields,
-          int_fields: @int_fields,
-          time_zone: @time_zone,
-        )
+        Query.new(tokenizer.tokenize(query_string), tokenizer)
       end
 
       private

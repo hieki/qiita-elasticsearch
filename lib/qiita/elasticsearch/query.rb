@@ -23,9 +23,9 @@ module Qiita
 
       # @param [Array<Qiita::Elasticsearch::Token>] tokens
       # @param [Hash] query_builder_options For building new query from this query
-      def initialize(tokens, query_builder_options = nil)
-        @query_builder_options = query_builder_options
-        @tokens = tokens
+      def initialize(tokens, tokenizer)
+        @tokens = tokens.freeze
+        @tokenizer = tokenizer
       end
 
       # @param [String] field_name
@@ -36,7 +36,8 @@ module Qiita
         if has_field_token?(field_name: field_name, term: term)
           self
         else
-          build_query([*@tokens, "#{field_name}:#{term}"].join(" "))
+          new_token = @tokenizer.create_token(field_name: field_name, term: term)
+          dup_with_tokens([*@tokens, new_token])
         end
       end
 
@@ -45,10 +46,10 @@ module Qiita
       # @return [Qiita::Elasticsearch::Query]
       # @example query.delete_field_token(field_name: "tag", term: "Ruby")
       def delete_field_token(field_name: nil, term: nil)
-        build_query(
+        dup_with_tokens(
           @tokens.reject do |token|
             (field_name.nil? || token.field_name == field_name) && (term.nil? || token.term == term)
-          end.join(" ")
+          end
         )
       end
 
@@ -101,11 +102,9 @@ module Qiita
       # @return [Qiita::Elasticsearch::Query]
       # @example query.update_field_token(field_name: "tag", term: "Ruby")
       def update_field_token(field_name: nil, term: nil)
-        build_query(
-          @tokens.reject do |token|
-            token.field_name == field_name
-          end.map(&:to_s).push("#{field_name}:#{term}").join(" ")
-        )
+        tokens = @tokens.reject { |token| token.field_name == field_name }
+        new_token = @tokenizer.create_token(field_name: field_name, term: term)
+        dup_with_tokens(tokens << new_token)
       end
 
       private
@@ -114,18 +113,8 @@ module Qiita
       # @param [String] query_string
       # @return [Qiita::Elasticsearch::Query]
       # @example build_query("test tag:Ruby")
-      def build_query(query_string)
-        query_builder.build(query_string)
-      end
-
-      # @return [Qiita::Elasticsearch::QueryBuilder]
-      def query_builder
-        QueryBuilder.new(query_builder_options)
-      end
-
-      # @return [Hash]
-      def query_builder_options
-        @query_builder_options || {}
+      def dup_with_tokens(tokens)
+        self.class.new(tokens, @tokenizer)
       end
     end
   end

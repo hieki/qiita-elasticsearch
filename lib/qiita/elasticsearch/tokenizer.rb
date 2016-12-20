@@ -63,21 +63,41 @@ module Qiita
             term = "#{field_name}:#{term}"
             field_name = nil
           end
-          token = token_class(field_name).new(
-            downcased: @downcased_fields.include?(field_name),
+
+          create_token(
             field_name: field_name,
             negative: !minus.nil?,
             quoted: !quoted_term.nil?,
-            filter: @filterable_fields.include?(field_name),
             term: term,
             token_string: token_string,
           )
-          token.options = @matchable_options if token.is_a?(MatchableToken)
-          token.default_fields = @default_fields if token.is_a?(MatchableToken)
-          token.field_mapping = @field_mapping if token.is_a?(MatchableToken)
-          token.time_zone = @time_zone if token.is_a?(DateToken)
-          token
         end
+      end
+
+      # @param [String, nil] field_name
+      # @param [Boolean] negative
+      # @param [Boolean] quoted
+      # @param [String, nil] term
+      # @param [String, nil] token_string
+      # @return [Qiita::Elasticsearch::Token]
+      def create_token(field_name: nil, negative: false, quoted: false, term: nil, token_string: nil)
+        token_string ||= [field_name, term].join(':')
+
+        token = token_class(field_name).new(
+          downcased: @downcased_fields.include?(field_name),
+          field_name: field_name,
+          negative: negative,
+          quoted: quoted,
+          filter: @filterable_fields.include?(field_name),
+          term: term,
+          token_string: token_string,
+        )
+
+        token.options = @matchable_options if token.is_a?(MatchableToken)
+        token.default_fields = @default_fields if token.is_a?(MatchableToken)
+        token.field_mapping = @field_mapping if token.is_a?(MatchableToken)
+        token.time_zone = @time_zone if token.is_a?(DateToken)
+        token
       end
 
       private
