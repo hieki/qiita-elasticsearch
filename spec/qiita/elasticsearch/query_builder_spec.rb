@@ -37,15 +37,15 @@ RSpec.describe Qiita::Elasticsearch::QueryBuilder do
     let(:properties) do
       {
         all_fields: all_fields,
+        date_fields: date_fields,
+        default_fields: default_fields,
         downcased_fields: downcased_fields,
+        field_mapping: field_mapping,
         filterable_fields: filterable_fields,
         hierarchal_fields: hierarchal_fields,
-        default_fields: default_fields,
         int_fields: int_fields,
-        date_fields: date_fields,
-        time_zone: time_zone,
         matchable_options: matchable_options,
-        field_mapping: field_mapping,
+        time_zone: time_zone,
       }
     end
 
