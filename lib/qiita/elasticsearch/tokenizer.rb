@@ -59,7 +59,7 @@ module Qiita
       def tokenize(query_string)
         query_string.scan(TOKEN_PATTERN).map do |token_string, minus, field_name, quoted_term, term|
           term ||= quoted_term
-          if !field_name.nil? && !@all_fields.include?(field_name) && !@field_mapping.key?(field_name)
+          if !field_name.nil? && !@all_fields.include?(field_name)
             term = "#{field_name}:#{term}"
             field_name = nil
           end
@@ -86,11 +86,12 @@ module Qiita
         fields = [
           base,
           @date_fields,
+          @default_fields,
           @downcased_fields,
           @filterable_fields,
           @hierarchal_fields,
           @int_fields,
-          @default_fields
+          @field_mapping.keys
         ].flatten.compact
 
         fields.map { |field| field.sub(/\^\d+\z/, "") }.uniq
