@@ -318,7 +318,7 @@ RSpec.describe Qiita::Elasticsearch::QueryBuilder do
           end
         end
 
-        context "with field mapping" do
+        context "with field mapping for multiple aliases" do
           let(:field_mapping) do
             {
               "title" =>  ["title", "title.ngram"]
@@ -327,6 +327,18 @@ RSpec.describe Qiita::Elasticsearch::QueryBuilder do
 
           it "returns match query for the corresponding field aliases" do
             expect(query.query.to_hash).to eq(build_combined_match_query(fields: ["title", "title.ngram"], query: "foo"))
+          end
+        end
+
+        context "with field mapping for a single alias" do
+          let(:field_mapping) do
+            {
+              "title" =>  "title.ngram"
+            }
+          end
+
+          it "returns match query for the corresponding field aliases" do
+            expect(query.query.to_hash).to eq(build_combined_match_query(fields: ["title.ngram"], query: "foo"))
           end
         end
       end

@@ -52,11 +52,11 @@ module Qiita
       end
 
       def target_fields
-        @target_fields ||= field_aliases ? field_aliases : [field_name]
+        @target_fields ||= field_aliases.empty? ? [field_name] : field_aliases
       end
 
       def field_aliases
-        field_mapping[field_name]
+        @field_aliases ||= Array(field_mapping[field_name])
       end
     end
   end
