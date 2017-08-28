@@ -15,11 +15,12 @@ module Qiita
       # @param [Array<String>, nil] int_fields
       # @param [Hash, nil] matchable_options
       # @param [String, nil] time_zone
-      def initialize(all_fields: nil, date_fields: nil, default_fields: nil, downcased_fields: nil, field_mapping: nil, filterable_fields: nil, hierarchal_fields: nil, int_fields: nil, matchable_options: nil, time_zone: nil)
+      def initialize(all_fields: nil, date_fields: nil, default_fields: nil, downcased_fields: nil, exact_match_fields: nil, field_mapping: nil, filterable_fields: nil, hierarchal_fields: nil, int_fields: nil, matchable_options: nil, time_zone: nil)
         @all_fields = all_fields
         @date_fields = date_fields
         @default_fields = default_fields
         @downcased_fields = downcased_fields
+        @exact_match_fields = exact_match_fields
         @field_mapping = field_mapping
         @filterable_fields = filterable_fields
         @hierarchal_fields = hierarchal_fields
@@ -35,6 +36,7 @@ module Qiita
           tokenizer.tokenize(query_string),
           default_fields: @default_fields,
           downcased_fields: @downcased_fields,
+          exact_match_fields: @exact_match_fields,
           filterable_fields: @filterable_fields,
           hierarchal_fields: @hierarchal_fields,
           int_fields: @int_fields,
@@ -50,6 +52,7 @@ module Qiita
           date_fields: @date_fields,
           default_fields: @default_fields,
           downcased_fields: @downcased_fields,
+          exact_match_fields: @exact_match_fields,
           field_mapping: @field_mapping,
           filterable_fields: @filterable_fields,
           hierarchal_fields: @hierarchal_fields,

@@ -10,6 +10,9 @@ RSpec.describe Qiita::Elasticsearch::QueryBuilder do
     let(:downcased_fields) do
     end
 
+    let(:exact_match_fields) do
+    end
+
     let(:filterable_fields) do
     end
 
@@ -40,6 +43,7 @@ RSpec.describe Qiita::Elasticsearch::QueryBuilder do
         date_fields: date_fields,
         default_fields: default_fields,
         downcased_fields: downcased_fields,
+        exact_match_fields: exact_match_fields,
         field_mapping: field_mapping,
         filterable_fields: filterable_fields,
         hierarchal_fields: hierarchal_fields,
@@ -143,15 +147,113 @@ RSpec.describe Qiita::Elasticsearch::QueryBuilder do
         '"a b"'
       end
 
-      it "returns multi match query with phrase type" do
-        expect(query.query.to_hash).to eq(
-          "multi_match" => {
-            "boost" => 1,
-            "fields" => ["_all"],
-            "query" => "a b",
-            "type" => "phrase",
-          },
-        )
+      context "and without field mapping" do
+        context "and without exact match fields" do
+          it "returns multi match query with phrase type for _all field" do
+            expect(query.query.to_hash).to eq(
+              "multi_match" => {
+                "boost" => 1,
+                "fields" => ["_all"],
+                "query" => "a b",
+                "type" => "phrase",
+              },
+            )
+          end
+        end
+
+        context "and with exact match fields" do
+          let(:exact_match_fields) do
+            ["title.ngram", "body.ngram"]
+          end
+
+          it "returns multi match query with phrase type for exact match fields" do
+            expect(query.query.to_hash).to eq(
+              "multi_match" => {
+                "boost" => 1,
+                "fields" => ["title.ngram", "body.ngram"],
+                "query" => "a b",
+                "type" => "phrase",
+              },
+            )
+          end
+        end
+      end
+
+      context "and with field mapping" do
+        let(:field_mapping) do
+          {
+            "title" =>  ["title", "title.ngram"]
+          }
+        end
+
+        context "and without exact match fields" do
+          it "returns multi match query with phrase type for _all field" do
+            expect(query.query.to_hash).to eq(
+              "multi_match" => {
+                "boost" => 1,
+                "fields" => ["_all"],
+                "query" => "a b",
+                "type" => "phrase",
+              },
+            )
+          end
+        end
+
+        context "and with exact match fields" do
+          let(:exact_match_fields) do
+            ["title.ngram", "body.ngram"]
+          end
+
+          it "returns multi match query with phrase type for exact match fields" do
+            expect(query.query.to_hash).to eq(
+              "multi_match" => {
+                "boost" => 1,
+                "fields" => ["title.ngram", "body.ngram"],
+                "query" => "a b",
+                "type" => "phrase",
+              },
+            )
+          end
+        end
+      end
+
+      context "and with field mapping containing weights" do
+        let(:field_mapping) do
+          {
+            "title" =>  ["title^1.0", "title.ngram^0.01"],
+            "body" =>  ["body^1.0", "body.ngram^0.01"]
+          }
+        end
+
+        context "and without exact match fields" do
+          it "returns multi match query with phrase type for _all field" do
+            expect(query.query.to_hash).to eq(
+              "multi_match" => {
+                "boost" => 1,
+                "fields" => ["_all"],
+                "query" => "a b",
+                "type" => "phrase",
+              },
+            )
+          end
+        end
+
+        context "and with exact match fields" do
+          let(:exact_match_fields) do
+            ["title.ngram^1.2", "body.ngram^1.0"]
+          end
+
+          it "returns multi match query with phrase type for exact match fields with weights" do
+            expect(query.query.to_hash).to eq(
+              "multi_match" => {
+                "boost" => 1,
+                "fields" => ["title.ngram^1.2", "body.ngram^1.0"],
+                "query" => "a b",
+                "type" => "phrase",
+              },
+            )
+          end
+        end
       end
     end
 
@@ -386,6 +488,141 @@ RSpec.describe Qiita::Elasticsearch::QueryBuilder do
 
           it "returns match query for the corresponding field aliases" do
             expect(query.query.to_hash).to eq(build_combined_match_query(fields: ["title", "title.ngram"], query: "foo"))
+          end
+        end
+      end
+    end
+
+    context "with double-quoted token including non-filterable field name" do
+      let(:query_string) do
+        'title:"foo"'
+      end
+
+      let(:default_fields) do
+        ["title"]
+      end
+
+      context "with field mapping" do
+        let(:field_mapping) do
+          {
+            "title" => ["title", "title.ngram"]
+          }
+        end
+
+        context "and without exact match fields" do
+          it "returns match query for the corresponding field aliases" do
+            expect(query.query.to_hash).to eq(
+              "multi_match" => {
+                "boost" => 1,
+                "fields" => ["title", "title.ngram"],
+                "query" => "foo",
+                "type" => "phrase",
+              },
+            )
+          end
+        end
+
+        context "and with exact match fields" do
+          let(:exact_match_fields) do
+            ["title.ngram"]
+          end
+
+          it "returns match query for the exact match fields" do
+            expect(query.query.to_hash).to eq(
+              "multi_match" => {
+                "boost" => 1,
+                "fields" => ["title.ngram"],
+                "query" => "foo",
+                "type" => "phrase",
+              },
+            )
+          end
+        end
+      end
+
+      context "with field mapping containing weights" do
+        let(:field_mapping) do
+          {
+            "title" => ["title^0.01", "title.ngram^0.0001"]
+          }
+        end
+
+        context "and without exact match fields" do
+          it "returns match query for the corresponding field aliases" do
+            expect(query.query.to_hash).to eq(
+              "multi_match" => {
+                "boost" => 1,
+                "fields" => ["title^0.01", "title.ngram^0.0001"],
+                "query" => "foo",
+                "type" => "phrase",
+              },
+            )
+          end
+        end
+
+        context "and with exact match fields" do
+          let(:exact_match_fields) do
+            ["title.ngram"]
+          end
+
+          it "returns match query for the exact match fields containing the weight derived from field mapping" do
+            expect(query.query.to_hash).to eq(
+              "multi_match" => {
+                "boost" => 1,
+                "fields" => ["title.ngram^0.0001"],
+                "query" => "foo",
+                "type" => "phrase",
+              },
+            )
+          end
+        end
+
+        context "and with exact match fields specifiying the weight" do
+          let(:exact_match_fields) do
+            ["title.ngram^1.2"]
+          end
+
+          it "returns match query for the mapped exact match fields containing weights specified in field mapping" do
+            expect(query.query.to_hash).to eq(
+              "multi_match" => {
+                "boost" => 1,
+                "fields" => ["title.ngram^0.0001"],
+                "query" => "foo",
+                "type" => "phrase",
+              },
+            )
+          end
+        end
+      end
+
+      context "without field mapping" do
+        context "and without exact match fields" do
+          it "returns match query for the original field" do
+            expect(query.query.to_hash).to eq(
+              "multi_match" => {
+                "boost" => 1,
+                "fields" => ["title"],
+                "query" => "foo",
+                "type" => "phrase",
+              },
+            )
+          end
+        end
+
+        context "and with exact match fields" do
+          let(:exact_match_fields) do
+            ["title.ngram"]
+          end
+
+          it "returns match query for the original field" do
+            expect(query.query.to_hash).to eq(
+              "multi_match" => {
+                "boost" => 1,
+                "fields" => ["title"],
+                "query" => "foo",
+                "type" => "phrase",
+              },
+            )
           end
         end
       end

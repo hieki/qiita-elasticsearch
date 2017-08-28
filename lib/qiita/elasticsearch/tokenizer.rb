@@ -10,6 +10,7 @@ module Qiita
     class Tokenizer
       DEFAULT_DATE_FIELDS = []
       DEFAULT_DOWNCASED_FIELDS = []
+      DEFAULT_EXACT_MATCH_FIELDS = []
       DEFAULT_FILTERABLE_FIELDS = []
       DEFAULT_HIERARCHAL_FIELDS = []
       DEFAULT_INT_FIELDS = []
@@ -34,6 +35,7 @@ module Qiita
       # @param [Array<String>, nil] all_fields
       # @param [Array<String>, nil] date_fields
       # @param [Array<String>, nil] downcased_fields
+      # @param [Array<String>, nil] exact_match_fields
       # @param [Array<String>, nil] filterable_fields
       # @param [Array<String>, nil] hierarchal_fields
       # @param [Array<String>, nil] int_fields
@@ -41,9 +43,10 @@ module Qiita
       # @param [Hash, nil] matchable_options Optional search parameters for MatchableToken
       # @param [Hash, nil] field_mapping alias of fields
       # @param [String, nil] time_zone
-      def initialize(all_fields: nil, date_fields: nil, downcased_fields: nil, filterable_fields: nil, hierarchal_fields: nil, int_fields: nil, default_fields: nil, time_zone: nil, matchable_options: nil, field_mapping: nil)
+      def initialize(all_fields: nil, date_fields: nil, downcased_fields: nil, exact_match_fields: nil, filterable_fields: nil, hierarchal_fields: nil, int_fields: nil, default_fields: nil, time_zone: nil, matchable_options: nil, field_mapping: nil)
         @date_fields = (date_fields || DEFAULT_DATE_FIELDS) | EXTRA_DATE_FIELDS
         @downcased_fields = downcased_fields || DEFAULT_DOWNCASED_FIELDS
+        @exact_match_fields = exact_match_fields || DEFAULT_EXACT_MATCH_FIELDS
         @filterable_fields = (filterable_fields || DEFAULT_FILTERABLE_FIELDS) | EXTRA_FILTERABLE_FIELDS
         @hierarchal_fields = hierarchal_fields || DEFAULT_HIERARCHAL_FIELDS
         @int_fields = int_fields || DEFAULT_INT_FIELDS
@@ -75,6 +78,7 @@ module Qiita
           token.options = @matchable_options if token.is_a?(MatchableToken)
           token.default_fields = @default_fields if token.is_a?(MatchableToken)
           token.field_mapping = @field_mapping if token.is_a?(MatchableToken)
+          token.exact_match_fields = @exact_match_fields if token.is_a?(MatchableToken)
           token.time_zone = @time_zone if token.is_a?(DateToken)
           token
         end
