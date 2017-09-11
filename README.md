@@ -113,3 +113,13 @@ query_builder = Qiita::Elasticsearch::QueryBuilder.new(field_mapping: { "headlin
 query_builder.build("headline:Ruby")
 #=> {"multi_match"=>{ "fields"=>["title", "title.ngram"], "query"=>"Ruby"}
 ```
+
+### exact_match_fields
+Pass `:exact_match_fields` option to specify the target fields for phrase queries.
+
+```rb
+query_builder = Qiita::Elasticsearch::QueryBuilder.new(exact_match_fields: ["title.ngram", "body.ngram"] )
+
+query_builder.build('"a b"')
+#=> {"multi_match"=>{ "fields"=>["title.ngram", "body.ngram"], "query"=>"a b", "type" => "phrase"}
+```
