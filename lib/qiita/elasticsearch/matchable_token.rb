@@ -43,10 +43,10 @@ module Qiita
       end
 
       def matchable_fields(type)
-        type == "phrase" ? target_phrase_query_fields : target_non_phrase_query_fields
+        type == "phrase" ? matchable_phrase_query_fields : target_non_phrase_query_fields
       end
 
-      def target_phrase_query_fields
+      def matchable_phrase_query_fields
         if field_name
           target_fields_for_phrase_query
         elsif exact_match_fields && !exact_match_fields.empty?
