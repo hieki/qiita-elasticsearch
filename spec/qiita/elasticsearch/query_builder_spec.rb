@@ -179,44 +179,6 @@ RSpec.describe Qiita::Elasticsearch::QueryBuilder do
         end
       end
 
-      context "and with field mapping" do
-        let(:field_mapping) do
-          {
-            "title" =>  ["title", "title.ngram"]
-          }
-        end
-
-        context "and without exact match fields" do
-          it "returns multi match query with phrase type for _all field" do
-            expect(query.query.to_hash).to eq(
-              "multi_match" => {
-                "boost" => 1,
-                "fields" => ["_all"],
-                "query" => "a b",
-                "type" => "phrase",
-              },
-            )
-          end
-        end
-
-        context "and with exact match fields" do
-          let(:exact_match_fields) do
-            ["title.ngram", "body.ngram"]
-          end
-
-          it "returns multi match query with phrase type for exact match fields" do
-            expect(query.query.to_hash).to eq(
-              "multi_match" => {
-                "boost" => 1,
-                "fields" => ["title.ngram", "body.ngram"],
-                "query" => "a b",
-                "type" => "phrase",
-              },
-            )
-          end
-        end
-      end
-
       context "and with field mapping containing weights" do
         let(:field_mapping) do
           {
