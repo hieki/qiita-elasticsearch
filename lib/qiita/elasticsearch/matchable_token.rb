@@ -91,9 +91,9 @@ module Qiita
       end
 
       def generate_exact_match_fields
-        exact_match_field_names = exact_match_fields.map { |field| field[/^([^\^]+)\^?.*$/, 1] }
+        exact_match_field_names = exact_match_fields.map { |field| field[/^([^\^]+)/, 1] }
         Array(field_mapping[field_name]).select do |field|
-          exact_match_field_names.include?(field[/^([^\^]+)\^?.*$/, 1])
+          exact_match_field_names.include?(field[/^([^\^]+)/, 1])
         end
       end
     end
