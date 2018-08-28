@@ -15,10 +15,10 @@ module Qiita
             QueryNode.new(not_filter_tokens).to_hash
           else
             {
-              "filtered" => {
+              "bool" => {
                 "filter" => FilterNode.new(filter_tokens).to_hash,
-                "query" => QueryNode.new(not_filter_tokens).to_hash,
-              }.reject do |key, value|
+                "must" => QueryNode.new(not_filter_tokens).to_hash,
+              }.reject do |_key, value|
                 value.empty?
               end,
             }
